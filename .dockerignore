@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!etl/
+!etl/*.py
+!sql/
+!sql/*.sql

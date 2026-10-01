@@ -1,0 +1,748 @@
+{
+  "name": "Banking Economic Conditions",
+  "compatibilityLevel": 1567,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "sourceQueryCulture": "en-US",
+    "tables": [
+      {
+        "name": "Series",
+        "columns": [
+          {
+            "name": "series_id",
+            "dataType": "string",
+            "sourceColumn": "series_id",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "title",
+            "dataType": "string",
+            "sourceColumn": "title",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "units",
+            "dataType": "string",
+            "sourceColumn": "units",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "frequency",
+            "dataType": "string",
+            "sourceColumn": "frequency",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "category",
+            "dataType": "string",
+            "sourceColumn": "category",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Series",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"dim_series\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": []
+      },
+      {
+        "name": "Monthly",
+        "columns": [
+          {
+            "name": "series_id",
+            "dataType": "string",
+            "sourceColumn": "series_id",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "month",
+            "dataType": "dateTime",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "value",
+            "dataType": "double",
+            "sourceColumn": "value",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "observation_count",
+            "dataType": "int64",
+            "sourceColumn": "observation_count",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Monthly",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_monthly_indicators\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Indicator value",
+            "expression": "AVERAGE(Monthly[value])",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Fed funds",
+            "expression": "CALCULATE([Indicator value], REMOVEFILTERS(Series), Monthly[series_id] = \"FEDFUNDS\")",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Unemployment",
+            "expression": "CALCULATE([Indicator value], REMOVEFILTERS(Series), Monthly[series_id] = \"UNRATE\")",
+            "formatString": "0.00"
+          }
+        ]
+      },
+      {
+        "name": "Yield Curve",
+        "columns": [
+          {
+            "name": "observation_date",
+            "dataType": "dateTime",
+            "sourceColumn": "observation_date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "yield_10y",
+            "dataType": "double",
+            "sourceColumn": "yield_10y",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "yield_2y",
+            "dataType": "double",
+            "sourceColumn": "yield_2y",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "spread_bps",
+            "dataType": "double",
+            "sourceColumn": "spread_bps",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "is_inverted",
+            "dataType": "boolean",
+            "sourceColumn": "is_inverted",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Yield Curve",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_yield_curve\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "10Y yield",
+            "expression": "AVERAGE('Yield Curve'[yield_10y])",
+            "formatString": "0.00"
+          },
+          {
+            "name": "2Y yield",
+            "expression": "AVERAGE('Yield Curve'[yield_2y])",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Spread (bps)",
+            "expression": "AVERAGE('Yield Curve'[spread_bps])",
+            "formatString": "0.0"
+          },
+          {
+            "name": "Inverted days",
+            "expression": "COUNTROWS(FILTER('Yield Curve', 'Yield Curve'[is_inverted] = TRUE()))",
+            "formatString": "0"
+          }
+        ]
+      },
+      {
+        "name": "Inflation",
+        "columns": [
+          {
+            "name": "month",
+            "dataType": "dateTime",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "cpi_index",
+            "dataType": "double",
+            "sourceColumn": "cpi_index",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "inflation_yoy_pct",
+            "dataType": "double",
+            "sourceColumn": "inflation_yoy_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Inflation",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_cpi_yoy\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "CPI inflation YoY",
+            "expression": "AVERAGE(Inflation[inflation_yoy_pct])",
+            "formatString": "0.00"
+          }
+        ]
+      },
+      {
+        "name": "Snapshot",
+        "columns": [
+          {
+            "name": "series_id",
+            "dataType": "string",
+            "sourceColumn": "series_id",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "title",
+            "dataType": "string",
+            "sourceColumn": "title",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "frequency",
+            "dataType": "string",
+            "sourceColumn": "frequency",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "units",
+            "dataType": "string",
+            "sourceColumn": "units",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "observation_date",
+            "dataType": "dateTime",
+            "sourceColumn": "observation_date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "value",
+            "dataType": "double",
+            "sourceColumn": "value",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "age_days",
+            "dataType": "int64",
+            "sourceColumn": "age_days",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "is_stale",
+            "dataType": "boolean",
+            "sourceColumn": "is_stale",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Snapshot",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_latest_snapshot\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Latest fed funds",
+            "expression": "CALCULATE(MAX(Snapshot[value]), REMOVEFILTERS(Series), Snapshot[series_id] = \"FEDFUNDS\")",
+            "formatString": "0.00\"%\""
+          },
+          {
+            "name": "Latest unemployment",
+            "expression": "CALCULATE(MAX(Snapshot[value]), REMOVEFILTERS(Series), Snapshot[series_id] = \"UNRATE\")",
+            "formatString": "0.00\"%\""
+          },
+          {
+            "name": "Latest mortgage",
+            "expression": "CALCULATE(MAX(Snapshot[value]), REMOVEFILTERS(Series), Snapshot[series_id] = \"MORTGAGE30US\")",
+            "formatString": "0.00\"%\""
+          },
+          {
+            "name": "Latest delinquency",
+            "expression": "CALCULATE(MAX(Snapshot[value]), REMOVEFILTERS(Series), Snapshot[series_id] = \"DRCCLACBS\")",
+            "formatString": "0.00\"%\""
+          },
+          {
+            "name": "Stale series",
+            "expression": "COUNTROWS(FILTER(Snapshot, Snapshot[is_stale] = TRUE()))",
+            "formatString": "0"
+          }
+        ]
+      },
+      {
+        "name": "Credit",
+        "columns": [
+          {
+            "name": "quarter_start",
+            "dataType": "dateTime",
+            "sourceColumn": "quarter_start",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "delinquency_pct",
+            "dataType": "double",
+            "sourceColumn": "delinquency_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "fed_funds_pct",
+            "dataType": "double",
+            "sourceColumn": "fed_funds_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "unemployment_pct",
+            "dataType": "double",
+            "sourceColumn": "unemployment_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Credit",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_credit_quarterly\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Delinquency",
+            "expression": "AVERAGE(Credit[delinquency_pct])",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Quarterly policy rate",
+            "expression": "AVERAGE(Credit[fed_funds_pct])",
+            "formatString": "0.00"
+          }
+        ]
+      },
+      {
+        "name": "Mortgage",
+        "columns": [
+          {
+            "name": "observation_date",
+            "dataType": "dateTime",
+            "sourceColumn": "observation_date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "mortgage_pct",
+            "dataType": "double",
+            "sourceColumn": "mortgage_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "treasury_10y_pct",
+            "dataType": "double",
+            "sourceColumn": "treasury_10y_pct",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          },
+          {
+            "name": "spread_pp",
+            "dataType": "double",
+            "sourceColumn": "spread_pp",
+            "summarizeBy": "none",
+            "formatString": "0.00"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Mortgage",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_mortgage_spread\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Mortgage rate",
+            "expression": "AVERAGE(Mortgage[mortgage_pct])",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Mortgage spread (pp)",
+            "expression": "AVERAGE(Mortgage[spread_pp])",
+            "formatString": "0.00"
+          }
+        ]
+      },
+      {
+        "name": "Pipeline",
+        "columns": [
+          {
+            "name": "run_id",
+            "dataType": "string",
+            "sourceColumn": "run_id",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "started_at",
+            "dataType": "dateTime",
+            "sourceColumn": "started_at",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "run_status",
+            "dataType": "string",
+            "sourceColumn": "run_status",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "series_id",
+            "dataType": "string",
+            "sourceColumn": "series_id",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "series_status",
+            "dataType": "string",
+            "sourceColumn": "series_status",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "rows_processed",
+            "dataType": "int64",
+            "sourceColumn": "rows_processed",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "missing_values",
+            "dataType": "int64",
+            "sourceColumn": "missing_values",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "error_type",
+            "dataType": "string",
+            "sourceColumn": "error_type",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Pipeline",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = PostgreSQL.Database(Server, Database, [CreateNavigationProperties=false]),",
+                "    Data = Source{[Schema=\"public\", Item=\"vw_pipeline_health\"]}[Data]",
+                "in",
+                "    Data"
+              ]
+            }
+          }
+        ],
+        "measures": []
+      },
+      {
+        "name": "Calendar",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "Year",
+            "dataType": "int64",
+            "sourceColumn": "Year",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Quarter",
+            "dataType": "string",
+            "sourceColumn": "Quarter",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Month",
+            "dataType": "dateTime",
+            "sourceColumn": "Month",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Calendar",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Start = #date(2000,1,1),",
+                "    Finish = #date(2035,12,31),",
+                "    Days = Table.FromList(List.Dates(Start,Duration.Days(Finish-Start)+1,#duration(1,0,0,0)),Splitter.SplitByNothing(),{\"Date\"}),",
+                "    Typed = Table.TransformColumnTypes(Days,{{\"Date\",type date}}),",
+                "    Years = Table.AddColumn(Typed,\"Year\",each Date.Year([Date]),Int64.Type),",
+                "    Quarters = Table.AddColumn(Years,\"Quarter\",each \"Q\" & Text.From(Date.QuarterOfYear([Date])),type text),",
+                "    Months = Table.AddColumn(Quarters,\"Month\",each Date.StartOfMonth([Date]),type date)",
+                "in",
+                "    Months"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "Date hierarchy",
+            "levels": [
+              {
+                "name": "Year",
+                "ordinal": 0,
+                "column": "Year"
+              },
+              {
+                "name": "Quarter",
+                "ordinal": 1,
+                "column": "Quarter"
+              },
+              {
+                "name": "Month",
+                "ordinal": 2,
+                "column": "Month"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "Calendar_Monthly",
+        "fromTable": "Monthly",
+        "fromColumn": "month",
+        "toTable": "Calendar",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Calendar_Yield Curve",
+        "fromTable": "Yield Curve",
+        "fromColumn": "observation_date",
+        "toTable": "Calendar",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Calendar_Inflation",
+        "fromTable": "Inflation",
+        "fromColumn": "month",
+        "toTable": "Calendar",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Calendar_Credit",
+        "fromTable": "Credit",
+        "fromColumn": "quarter_start",
+        "toTable": "Calendar",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Calendar_Mortgage",
+        "fromTable": "Mortgage",
+        "fromColumn": "observation_date",
+        "toTable": "Calendar",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Series_Monthly",
+        "fromTable": "Monthly",
+        "fromColumn": "series_id",
+        "toTable": "Series",
+        "toColumn": "series_id",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "Series_Snapshot",
+        "fromTable": "Snapshot",
+        "fromColumn": "series_id",
+        "toTable": "Series",
+        "toColumn": "series_id",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "Server",
+        "kind": "m",
+        "expression": "\"localhost:5433\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]"
+      },
+      {
+        "name": "Database",
+        "kind": "m",
+        "expression": "\"fred_pipeline\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]"
+      }
+    ],
+    "annotations": [
+      {
+        "name": "PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      }
+    ]
+  }
+}

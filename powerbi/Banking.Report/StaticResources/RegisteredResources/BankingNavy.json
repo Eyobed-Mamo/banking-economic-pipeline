@@ -1,0 +1,13 @@
+{
+  "name": "Banking Navy",
+  "dataColors": [
+    "#147D92",
+    "#D49A32",
+    "#345995",
+    "#A3455B",
+    "#548C73"
+  ],
+  "background": "#F3F6FA",
+  "foreground": "#17324D",
+  "tableAccent": "#147D92"
+}

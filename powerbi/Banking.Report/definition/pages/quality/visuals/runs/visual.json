@@ -1,0 +1,195 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.1.0/schema.json",
+  "name": "runs",
+  "position": {
+    "x": 28,
+    "y": 390,
+    "z": 0,
+    "height": 400,
+    "width": 1384,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Run history: partial and failed runs need attention'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "started_at"
+                }
+              },
+              "queryRef": "Pipeline.started_at",
+              "nativeQueryRef": "started_at"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "run_status"
+                }
+              },
+              "queryRef": "Pipeline.run_status",
+              "nativeQueryRef": "run_status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "series_id"
+                }
+              },
+              "queryRef": "Pipeline.series_id",
+              "nativeQueryRef": "series_id"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "series_status"
+                }
+              },
+              "queryRef": "Pipeline.series_status",
+              "nativeQueryRef": "series_status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "rows_processed"
+                }
+              },
+              "queryRef": "Pipeline.rows_processed",
+              "nativeQueryRef": "rows_processed"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "missing_values"
+                }
+              },
+              "queryRef": "Pipeline.missing_values",
+              "nativeQueryRef": "missing_values"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pipeline"
+                    }
+                  },
+                  "Property": "error_type"
+                }
+              },
+              "queryRef": "Pipeline.error_type",
+              "nativeQueryRef": "error_type"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
